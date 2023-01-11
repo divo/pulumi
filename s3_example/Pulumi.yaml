@@ -1,0 +1,6 @@
+name: s3_example
+runtime:
+  name: python
+  options:
+    virtualenv: venv
+description: A minimal Python Pulumi program
