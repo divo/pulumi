@@ -34,7 +34,7 @@ keyPair = aws.ec2.KeyPair('key', public_key=publicKey)
 size = 't2.micro'
 ami = aws.ec2.get_ami(most_recent="true",
         owners=["137112412989"],
-        filters=[{"name":"name","values":["amzn-ami-hvm-*"]}])
+        filters=[{"name":"name","values":["amzn2-ami-hvm-*"]}])
 
 # Create a new security group that permits SSH and web access.
 secgrp = aws.ec2.SecurityGroup('secgrp',
