@@ -1,0 +1,29 @@
+---
+- name: Installing and Managing Nginx Server 
+  hosts: mynginx
+  become: True
+  vars:
+    nginx_version: 1
+    nginx_html: /usr/share/nginx/html
+    user_home: /home/ec2-user
+    index_html: index.html
+  tasks:
+    - name : Update the image
+      command: sudo yum update && sudo yum install -y amazon-linux-extras
+
+    - name: Install the latest version of nginx
+      command: amazon-linux-extras install nginx{{ nginx_version }}=latest -y
+
+    - name: Start nginx service
+      service:
+        name: nginx
+        state: started
+
+    - name: Enable nginx service
+      service:
+        name: nginx
+        enabled: yes
+    - name: Copy index.html to managed nodes
+      copy:
+        src:  "{{ index_html }}"
+        dest: "{{ nginx_html }}"
