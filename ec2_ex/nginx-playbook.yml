@@ -1,6 +1,6 @@
 ---
 - name: Installing and Managing Nginx Server 
-  hosts: mynginx
+  hosts: all
   become: True
   vars:
     nginx_version: 1

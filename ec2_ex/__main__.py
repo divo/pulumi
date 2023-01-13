@@ -14,6 +14,7 @@ import pulumi
 import pulumi_aws as aws
 import pulumi_command as command
 import base64
+import checksumdir
 from pathlib import Path
 
 config = pulumi.Config()
@@ -23,8 +24,8 @@ config = pulumi.Config()
 # key_name = config.get('keyName')
 # public_key = config.get('publicKey')
 
-publicKeyPath = config.get('publicKeyPath')
-privateKeyPath = config.get('privateKeyPath')
+publicKeyPath = config.require('publicKeyPath')
+privateKeyPath = config.require('privateKeyPath')
 
 publicKey = Path(publicKeyPath).read_text()
 privateKey = pulumi.Output.secret(Path(privateKeyPath).read_text())
@@ -49,16 +50,33 @@ secgrp = aws.ec2.SecurityGroup('secgrp',
             ],
         )
 
+# Provison the EC2 machine
 server = aws.ec2.Instance('ec2-example',
         instance_type=size,
         key_name=keyPair.id,
         vpc_security_group_ids=[secgrp.id], # reference security group from above
         ami=ami.id)
 
+# Not completely sure I still need this
 connection = command.remote.ConnectionArgs(
     host=server.public_ip,
     user='ec2-user',
     private_key=privateKey,
+)
+
+# Hash the dirs contents to determine if an update is needed.
+# TODO: This just triggers everytime. write it out to a file and compare or something
+checksum = checksumdir.dirhash('.', 'md5')
+
+# Play the Ansible playbook
+play_ansible_playbook_cmd = command.local.Command("playAnsiblePlaybookCmd",
+    create=server.public_ip.apply(lambda public_ip: f"""\
+            ANSIBLE_HOST_KEY_CHECKING=False ANSIBLE_PYTHON_INTERPRETER=auto_silent ansible-playbook \
+            -u ec2-user \
+            -i '{public_ip},' \
+            --private-key {privateKeyPath} \
+            nginx-playbook.yml"""),
+    triggers=[checksum],
 )
 
 pulumi.export('publicIp', server.public_ip)
