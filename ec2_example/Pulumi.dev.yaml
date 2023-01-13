@@ -1,0 +1,4 @@
+config:
+  adr_docket:privateKeyPath: rsa
+  adr_docket:publicKeyPath: rsa.pub
+  aws:region: eu-west-1

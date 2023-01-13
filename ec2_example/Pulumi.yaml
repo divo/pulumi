@@ -1,0 +1,6 @@
+name: ec2_example
+runtime:
+  name: python
+  options:
+    virtualenv: venv
+description: EC2 example
